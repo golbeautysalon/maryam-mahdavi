@@ -20,12 +20,13 @@ body{min-height:100vh;background:radial-gradient(circle at 50% 20%,#7a284a,#3b0d
 .contact-title{font-size:34px;font-weight:bold;color:#a80856;margin:4px 0 14px}
 .contact-text{font-size:20px;line-height:1.75;margin:2px 0}
 .contact-phone{font-size:23px;font-weight:bold;color:#7b1743;margin:7px 0;direction:rtl}
-@media(max-width:700px){.shell{height:68vh;min-height:390px}}
-
-.installBtn{display:none;margin:7px auto 9px;border:1px solid #c8a35d;background:#fff;color:#7b1743;border-radius:999px;padding:9px 18px;font:inherit;cursor:pointer}
+@media(max-width:700px){.shell{height:66vh;min-height:360px}.wrap{padding:7px}.navBtn,.installBtn{font-size:14px;padding:9px 14px}}
+.installBtn{display:inline-block;margin:7px auto 7px;border:1px solid #c8a35d;background:#fff;color:#7b1743;border-radius:999px;padding:10px 18px;font:inherit;font-weight:bold;cursor:pointer}
+.navBtns{display:flex;gap:10px;justify-content:center;align-items:center;margin:0 auto 8px}.navBtn{border:1px solid #c8a35d;background:#fff;color:#7b1743;border-radius:999px;padding:9px 20px;font:inherit;font-weight:bold;cursor:pointer}
+.installModal{display:none;position:fixed;inset:0;background:#0009;z-index:9999;align-items:center;justify-content:center;padding:18px}.installCard{width:min(92vw,430px);background:#fff;color:#321c26;border:2px solid #c8a35d;border-radius:20px;padding:22px;text-align:right;box-shadow:0 20px 60px #0008}.installCard h2{margin:0 0 12px;color:#7b1743;text-align:center}.installCard p{line-height:1.9;margin:8px 0}.installCard .step{background:#faf3f6;border-radius:12px;padding:9px 12px;margin:8px 0}.closeInstall{display:block;margin:15px auto 0;border:0;background:#7b1743;color:#fff;border-radius:999px;padding:9px 24px;font:inherit;cursor:pointer}
 </style></head><body><div class="wrap">
 <h1>آلبوم نمونه‌کارهای مریم مهدوی</h1>
-<button id="installBtn" class="installBtn">ذخیره آلبوم روی گوشی</button><div class="hint">صفحه را با انگشت یا ماوس از راست به چپ ورق بزنید</div>
+<button id="installBtn" class="installBtn">📱 نصب آلبوم روی گوشی</button><div class="hint">صفحه را با انگشت یا ماوس از راست به چپ ورق بزنید</div><div class="navBtns"><button id="prevBtn" class="navBtn">قبلی</button><button id="nextBtn" class="navBtn">بعدی</button></div>
 <div class="shell"><div id="book">
 <div class="page back-cover contact-page" data-density="hard">
   <img src="./images/last-logo.jpg" alt="اطلاعات سالن زیبایی گل">
@@ -38,32 +39,39 @@ body{min-height:100vh;background:radial-gradient(circle at 50% 20%,#7a284a,#3b0d
 <div class="page"><img src="./images/page01.jpg" alt="مشخصات مریم مهدوی"></div>
 <div class="page cover" data-density="hard"><img src="./images/cover.jpg" alt="مریم مهدوی"></div>
 </div></div></div>
+<div id="installModal" class="installModal" role="dialog" aria-modal="true"><div class="installCard"><h2>نصب آلبوم روی گوشی</h2><div id="installHelp"></div><button id="closeInstall" class="closeInstall">متوجه شدم</button></div></div>
 <script src="https://cdn.jsdelivr.net/npm/page-flip@2.0.7/dist/js/page-flip.browser.min.js"></script>
 <script>
+let albumFlip=null;
 window.addEventListener("load",()=>{
- const pf=new St.PageFlip(document.getElementById("book"),{
+ albumFlip=new St.PageFlip(document.getElementById("book"),{
  width:450,height:600,size:"stretch",minWidth:280,maxWidth:520,minHeight:380,maxHeight:740,
  maxShadowOpacity:.55,showCover:true,mobileScrollSupport:false,usePortrait:true,flippingTime:900,
  swipeDistance:20,useMouseEvents:true,autoSize:true,drawShadow:true});
- pf.loadFromHTML(document.querySelectorAll(".page"));
- setTimeout(()=>{pf.turnToPage(document.querySelectorAll(".page").length-1);},120);
+ albumFlip.loadFromHTML(document.querySelectorAll(".page"));
+ setTimeout(()=>albumFlip.turnToPage(document.querySelectorAll(".page").length-1),120);
+ document.getElementById("nextBtn").addEventListener("click",()=>albumFlip.flipPrev("top"));
+ document.getElementById("prevBtn").addEventListener("click",()=>albumFlip.flipNext("top"));
 });
-</script><script>
+</script>
+<script>
 let deferredInstall=null;
-const installBtn=document.getElementById('installBtn');
-window.addEventListener('beforeinstallprompt',e=>{
- e.preventDefault(); deferredInstall=e; installBtn.style.display='inline-block';
+const installBtn=document.getElementById("installBtn");
+const modal=document.getElementById("installModal");
+const help=document.getElementById("installHelp");
+const isiOS=/iphone|ipad|ipod/i.test(navigator.userAgent);
+const isStandalone=window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone===true;
+window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferredInstall=e;});
+installBtn.addEventListener("click",async()=>{
+ if(isStandalone){help.innerHTML='<p style="text-align:center">✅ آلبوم روی این گوشی نصب شده است.</p>';modal.style.display='flex';return;}
+ if(deferredInstall){deferredInstall.prompt();await deferredInstall.userChoice;deferredInstall=null;return;}
+ if(isiOS){help.innerHTML='<div class="step">۱) آلبوم را در <b>Safari</b> باز کنید.</div><div class="step">۲) دکمه <b>Share</b> (مربع با فلش رو به بالا) را بزنید.</div><div class="step">۳) <b>Add to Home Screen</b> را انتخاب کنید.</div><div class="step">۴) بالا روی <b>Add</b> بزنید.</div>';
+ }else{help.innerHTML='<div class="step">۱) منوی مرورگر ⋮ را باز کنید.</div><div class="step">۲) گزینه <b>Install app</b> یا <b>Add to Home screen</b> را بزنید.</div><div class="step">۳) نصب را تأیید کنید.</div>'; }
+ modal.style.display='flex';
 });
-installBtn.addEventListener('click',async()=>{
- if(!deferredInstall)return;
- deferredInstall.prompt();
- await deferredInstall.userChoice;
- deferredInstall=null;
- installBtn.style.display='none';
-});
-window.addEventListener('appinstalled',()=>installBtn.style.display='none');
-if('serviceWorker' in navigator){
- window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js'));
-}
+document.getElementById("closeInstall").addEventListener("click",()=>modal.style.display='none');
+modal.addEventListener("click",e=>{if(e.target===modal)modal.style.display='none'});
+window.addEventListener("appinstalled",()=>{deferredInstall=null;});
+if("serviceWorker" in navigator){window.addEventListener("load",async()=>{try{const reg=await navigator.serviceWorker.register("./sw.js",{updateViaCache:"none"});await reg.update();}catch(e){}});}
 </script>
 </body></html>
